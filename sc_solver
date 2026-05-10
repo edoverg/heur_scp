@@ -5,4 +5,4 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Call the Python script with the provided argument
-python3 "$SCRIPT_DIR/main.py" "$1"
+python3 "$SCRIPT_DIR/raw_main.py" "$1"

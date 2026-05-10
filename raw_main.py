@@ -1,8 +1,10 @@
 import time
-
+import glob
+import os
+import sys
 # PREPROCESSING
-def preprocess_instance(instance):
-    file_name = 'instances/' + instance
+def preprocess_instance(instance_path):
+    file_name = instance_path
 
     all_rows = []
     col_num = 0
@@ -85,7 +87,6 @@ def meta_raps_set_cover(all_rows, target_mask, p_priority=1.0, iterations=2):
         # --- Improvement Phase (Redundancy Check) ---
         current_solution, final_indices = prune_redundant_sets(current_solution, chosen_indices, target_mask)
         current_cost = sum(all_rows[i][0] for i in final_indices) # Assuming mask objects have cost
-        print(f"Iteration {iter} completed with cost {current_cost}")
         if current_cost < min_cost:
             min_cost = current_cost
             best_solution = current_solution
@@ -93,13 +94,49 @@ def meta_raps_set_cover(all_rows, target_mask, p_priority=1.0, iterations=2):
 
     return best_solution, min_cost, best_indices
 
+def get_next_instance_number(directory=".",instance_name=""):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    # Look for any files matching 'instance.*.sol'
+    existing_files = glob.glob(os.path.join(directory, f"{instance_name}.*.sol"))
+
+    if not existing_files:
+        return 1
+
+    numbers = []
+    for f in existing_files:
+        try:
+            #file format is always instance.number.sol
+            num = int(os.path.basename(f).split('.')[1])
+            numbers.append(num)
+        except (ValueError, IndexError):
+            continue
+            
+    return max(numbers) + 1 if numbers else 1
+
+def save_solution(filename, min_cost, best_indices):
+    with open(filename, 'w') as f:
+        f.write(f"{min_cost}\n")
+        for ind in best_indices:
+            f.write(f"{ind} ")
+
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <path_to_instance>", file=sys.stderr)
+        sys.exit(1)
+    
+    instance_path = sys.argv[1]
+    filename = os.path.basename(instance_path)
+
     time_start = time.time()
     
-    all_rows, col_num = preprocess_instance('rail4284')
+    all_rows, col_num = preprocess_instance(instance_path)
     best_solution, min_cost, best_indices = meta_raps_set_cover(all_rows=all_rows, target_mask=(1 << col_num) - 1, p_priority=0.9, iterations=1)
-    
+
     time_end = time.time()
 
     print(f"#### Feasible solution of value {min_cost} [time {time_end - time_start}]")
-    
+
+    directory_name = "results"
+    next_index_number = get_next_instance_number(directory=directory_name, instance_name=filename)
+    save_solution(f"{directory_name}/{filename}.{next_index_number}.sol", min_cost=min_cost, best_indices=best_indices)
