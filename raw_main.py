@@ -3,8 +3,9 @@ import glob
 import os
 import sys
 import random
+from typing import Tuple, List, Union
 
-def preprocess_instance(instance_path: str) -> tuple[list[tuple[int, int]], int]:
+def preprocess_instance(instance_path: str) -> Tuple[List[Tuple[int, int]], int]:
     '''Preprocesses the instance file and returns the list of rows and the number of columns.
     Parameters:
         instance_path: Path to the instance file
@@ -30,7 +31,7 @@ def preprocess_instance(instance_path: str) -> tuple[list[tuple[int, int]], int]
 
     return all_rows, col_num
 
-def prune_redundant_sets(solution_masks: list[int], chosen_indices: list[int], target_mask: int) -> tuple[list[int], list[int]]:
+def prune_redundant_sets(solution_masks: List[int], chosen_indices: List[int], target_mask: int) -> Tuple[List[int], List[int]]:
     '''Prune redundant sets from the solution. It iterates through the solution and checks if removing a set still covers the target mask.
     If removing a set does not cover the target mask, it is added to the pruned solution and classified as essential. 
     The process continues until all sets have been checked.
@@ -61,7 +62,7 @@ def prune_redundant_sets(solution_masks: list[int], chosen_indices: list[int], t
         i += 1
     return pruned_solution, final_indices
 
-def try_2_1_swap(all_rows: list[tuple[int, int]], current_solution: list[int], chosen_indices: list[int]) -> tuple[list[int], int, list[int]]:
+def try_2_1_swap(all_rows: List[Tuple[int, int]], current_solution: List[int], chosen_indices: List[int]) -> Tuple[List[int], int, List[int]]:
     '''Tries to perform a 2-1 swap on the current solution. It iterates through all pairs of sets in the current solution.
     For each pair, it determines the essential elements covered by these two sets together. Then, it looks for a single
     set in all_rows that can cover the essential elements but has a lower cost than the combined cost the two sets.
@@ -110,12 +111,12 @@ def try_2_1_swap(all_rows: list[tuple[int, int]], current_solution: list[int], c
         
     return new_solution, new_cost, new_chosen_indices
 
-def construct_and_improve_solution(all_rows: list[tuple[int, int]],
-                                   current_solution: list[int], 
-                                   chosen_indices: list[int], 
+def construct_and_improve_solution(all_rows: List[Tuple[int, int]],
+                                   current_solution: List[int], 
+                                   chosen_indices: List[int], 
                                    covered: int, 
                                    target_mask: int, 
-                                   p_priority: float) -> tuple[list[int], int, list[int]]:
+                                   p_priority: float) -> Tuple[List[int], int, List[int]]:
     """
     Randomized greedy construction phase with candidate list and improvement phase (redundancy pruning).
     
@@ -154,14 +155,14 @@ def construct_and_improve_solution(all_rows: list[tuple[int, int]],
     
     return current_solution, current_cost, final_indices
 
-def reduced_scp(all_rows: list[tuple[int, int]], 
-                initial_solution: list[int], 
-                initial_indices: list[int], 
-                initial_cost:int | float, 
-                improve_iterations:int, 
-                p_priority:float, 
-                search_magnitude:float, 
-                target_mask:int) -> tuple[list[int], int | float, list[int]]:
+def reduced_scp(all_rows: List[Tuple[int, int]], 
+                initial_solution: List[int], 
+                initial_indices: List[int], 
+                initial_cost: int | float, 
+                improve_iterations: int, 
+                p_priority: float, 
+                search_magnitude: float, 
+                target_mask: int) -> Tuple[List[int], int | float, List[int]]:
     
     """A reduced Set Cover Problem - it takes as input a feasible solution, removes a random number of sets and attempts
     to reconstruct a better solution.
@@ -213,13 +214,13 @@ def reduced_scp(all_rows: list[tuple[int, int]],
     
     return best_solution, best_cost, best_indices
 
-def meta_rasp_set_cover(all_rows: list[tuple[int, int]], 
+def meta_rasp_set_cover(all_rows: List[Tuple[int, int]], 
                         target_mask: int, 
                         covered_input: int = 0, 
                         p_priority: float = 0.9, 
                         iterations: int = 1,
                         run_reduced_scp: bool = False , 
-                        run_ls: bool = False) -> tuple[list[int], int | float, list[int]]:
+                        run_ls: bool = False) -> Tuple[List[int], int | float, List[int]]:
     '''Entry point for the metaheuristic algorithm. It performs multiple iterations of construction and improvement, 
     followed by an optional reduced SCP phase and local search phase.
     Parameters:
@@ -297,7 +298,7 @@ def get_next_instance_number(directory: str = ".", instance_name: str = "") -> i
 
     return next_num
 
-def save_solution(filename: str, min_cost: int | float, best_indices: list[int], time_elapsed: float) -> None:
+def save_solution(filename: str, min_cost: int | float, best_indices: List[int], time_elapsed: float) -> None:
     '''Save the solution to a file in the specified format.
     Parameters:
         filename: The name of the file to save the solution to.
@@ -314,6 +315,7 @@ def save_solution(filename: str, min_cost: int | float, best_indices: list[int],
         f.write(f"\n{time_elapsed}\n")
       
 if __name__ == "__main__":
+    print("Starting the metaheuristic algorithm for Set Cover Problem...")
     #sys.argv = ["raw_main.py","instances/rail507"]
     if len(sys.argv) < 2:
         print("Usage: python raw_main.py <path_to_instance>", file=sys.stderr)
