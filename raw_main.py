@@ -158,11 +158,11 @@ def construct_and_improve_solution(all_rows: List[Tuple[int, int]],
 def reduced_scp(all_rows: List[Tuple[int, int]], 
                 initial_solution: List[int], 
                 initial_indices: List[int], 
-                initial_cost: int | float, 
+                initial_cost: Union[int, float], 
                 improve_iterations: int, 
                 p_priority: float, 
                 search_magnitude: float, 
-                target_mask: int) -> Tuple[List[int], int | float, List[int]]:
+                target_mask: int) -> Tuple[List[int], Union[int, float], List[int]]:
     
     """A reduced Set Cover Problem - it takes as input a feasible solution, removes a random number of sets and attempts
     to reconstruct a better solution.
@@ -220,7 +220,7 @@ def meta_rasp_set_cover(all_rows: List[Tuple[int, int]],
                         p_priority: float = 0.9, 
                         iterations: int = 1,
                         run_reduced_scp: bool = False , 
-                        run_ls: bool = False) -> Tuple[List[int], int | float, List[int]]:
+                        run_ls: bool = False) -> Tuple[List[int], Union[int, float], List[int]]:
     '''Entry point for the metaheuristic algorithm. It performs multiple iterations of construction and improvement, 
     followed by an optional reduced SCP phase and local search phase.
     Parameters:
@@ -298,7 +298,7 @@ def get_next_instance_number(directory: str = ".", instance_name: str = "") -> i
 
     return next_num
 
-def save_solution(filename: str, min_cost: int | float, best_indices: List[int], time_elapsed: float) -> None:
+def save_solution(filename: str, min_cost: Union[int, float], best_indices: List[int], time_elapsed: float) -> None:
     '''Save the solution to a file in the specified format.
     Parameters:
         filename: The name of the file to save the solution to.
