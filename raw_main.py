@@ -65,7 +65,7 @@ def prune_redundant_sets(solution_masks: List[int], chosen_indices: List[int], t
 def try_2_1_swap(all_rows: List[Tuple[int, int]], current_solution: List[int], chosen_indices: List[int]) -> Tuple[List[int], int, List[int]]:
     '''Tries to perform a 2-1 swap on the current solution. It iterates through all pairs of sets in the current solution.
     For each pair, it determines the essential elements covered by these two sets together. Then, it looks for a single
-    set in all_rows that can cover the essential elements but has a lower cost than the combined cost the two sets.
+    set in all_rows that can cover the essential elements but has a lower cost than the combined cost of the two sets.
     Parameters:
         all_rows: List of (cost, mask) tuples for all sets
         current_solution: List of masks in the current solution
@@ -96,8 +96,8 @@ def try_2_1_swap(all_rows: List[Tuple[int, int]], current_solution: List[int], c
             # has a lower cost than the combined one
             for index, (cost, mask) in enumerate(all_rows):
                 if (mask & essential_mask) == essential_mask and cost < combined_cost:
-                    print(f"Found a better set at index {index} that can replace\
-                           sets at indices {chosen_indices[i]} and {chosen_indices[j]}")
+                    #print(f"Found a better set at index {index} that can replace\
+                    #       sets at indices {chosen_indices[i]} and {chosen_indices[j]}")
                     # Update the solution by replacing the two sets with the new set
                     del new_solution[max(i, j)]
                     del new_solution[min(i, j)]
@@ -134,10 +134,14 @@ def construct_and_improve_solution(all_rows: List[Tuple[int, int]],
     """
     
     while (covered & target_mask) != target_mask:
-        gains = [(index, cost, mask, (mask & ~covered).bit_count()) 
-                for index, (cost, mask) in enumerate(all_rows)]
+        #gains = [(index, cost, mask, (mask & ~covered).bit_count()) 
+        #        for index, (cost, mask) in enumerate(all_rows)]
         
-        valid_candidates = [g for g in gains if g[3] > 0]
+        #valid_candidates = [g for g in gains if g[3] > 0]
+        valid_candidates = [(index, cost, mask, gain) 
+                    for index, (cost, mask) in enumerate(all_rows)
+                    if (gain := (mask & ~covered).bit_count()) > 0]
+
         if not valid_candidates: 
             break
         
@@ -242,7 +246,7 @@ def meta_rasp_set_cover(all_rows: List[Tuple[int, int]],
             all_rows, [], [], covered_input, target_mask, p_priority
         )
 
-    print("After initial construction cost is ", min_cost)
+    #print("After initial construction cost is ", min_cost)
 
     if run_reduced_scp:
         best_solution, min_cost, best_indices = reduced_scp(
@@ -256,10 +260,10 @@ def meta_rasp_set_cover(all_rows: List[Tuple[int, int]],
             target_mask=target_mask
         )
     
-    print("After reduced SCP, cost is ", min_cost)
+    #print("After reduced SCP, cost is ", min_cost)
     
     if run_ls:
-        for _ in range(5):
+        for _ in range(3):
             best_solution, min_cost, best_indices = try_2_1_swap(
                 all_rows=all_rows, 
                 current_solution=best_solution, 
@@ -315,8 +319,8 @@ def save_solution(filename: str, min_cost: Union[int, float], best_indices: List
         f.write(f"\n{time_elapsed}\n")
       
 if __name__ == "__main__":
-    print("Starting the metaheuristic algorithm for Set Cover Problem...")
-    #sys.argv = ["raw_main.py","instances/rail507"]
+    #print("Starting the metaheuristic algorithm for Set Cover Problem...")
+    #sys.argv = ["raw_main.py","instances/rail2536"]
     if len(sys.argv) < 2:
         print("Usage: python raw_main.py <path_to_instance>", file=sys.stderr)
         sys.exit(1)
@@ -338,8 +342,8 @@ if __name__ == "__main__":
         target_mask=target_mask, 
         p_priority=0.9, 
         iterations=1,
-        run_reduced_scp=True,
-        run_ls=True,
+        run_reduced_scp=False,
+        run_ls=False,
     )
 
     time_end = time.time()
